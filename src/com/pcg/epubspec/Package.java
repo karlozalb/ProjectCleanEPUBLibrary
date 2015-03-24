@@ -1,11 +1,5 @@
 package com.pcg.epubspec;
 
-import com.pcg.epubspec.metadata.Bindings;
-import com.pcg.epubspec.metadata.Collection;
-import com.pcg.epubspec.metadata.Guide;
-import com.pcg.epubspec.metadata.Manifest;
-import com.pcg.epubspec.metadata.Metadata;
-import com.pcg.epubspec.metadata.Spine;
 
 public class Package {
 
@@ -17,5 +11,13 @@ public class Package {
 	Guide GUIDE;
 	Bindings BINDINGS;
 	Collection COLLECTION;
+	
+	public Package(){
+		METADATA = new Metadata();
+	}
+	
+	public Metadata getMetadata(){
+		return METADATA;
+	}
 	
 }

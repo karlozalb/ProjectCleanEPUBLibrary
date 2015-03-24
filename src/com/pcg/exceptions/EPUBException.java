@@ -1,7 +1,9 @@
 package com.pcg.exceptions;
 
 public class EPUBException extends Exception {
-
+	
+	private static final long serialVersionUID = -5127284242063641917L;
+	
 	private String message = null;
 	 
     public EPUBException() {
