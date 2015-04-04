@@ -1,5 +1,6 @@
 package com.pcg.epubspec;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.w3c.dom.Node;
@@ -37,19 +38,22 @@ public class Manifest implements IVerificable,IEPUBMainNode{
 			Node node = children.item(i);
 			
 			if (node.hasAttributes()){
-				item.id = EPUBUtils.getAttributeValue("id", node.getAttributes());		
-				item.href = EPUBUtils.getAttributeValue("href", node.getAttributes());		
-				item.media_type = EPUBUtils.getAttributeValue("media_type", node.getAttributes());		
-				item.fallback = EPUBUtils.getAttributeValue("fallback", node.getAttributes());		
-				item.properties = EPUBUtils.getAttributeValue("properties", node.getAttributes());		
-				item.media_overlay = EPUBUtils.getAttributeValue("media_overlay", node.getAttributes());
+				
+				HashMap<String,String> attributes = EPUBUtils.getAttributesMap(node.getAttributes());
+				
+				item.id = attributes.get("id");		
+				item.href = attributes.get("href");	
+				item.media_type = attributes.get("media_type");	
+				item.fallback = attributes.get("fallback");	
+				item.properties = attributes.get("properties");	
+				item.media_overlay = attributes.get("media_overlay");
 			}			
 		}		
 	}
 
 	@Override
 	public boolean isValid() throws EPUBException {
-		return false;
+		return true;
 	}	
 
 }

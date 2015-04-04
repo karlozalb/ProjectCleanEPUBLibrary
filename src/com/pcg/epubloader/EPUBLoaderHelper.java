@@ -107,10 +107,13 @@ public class EPUBLoaderHelper {
              
             NodeList nodeList = document.getDocumentElement().getChildNodes(); //<package> node children.
              
+            
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);               
                 if (node.getNodeName().equalsIgnoreCase("metadata")){ //metadata node found.
                     processMetadata(node);
+                }else if (node.getNodeName().equalsIgnoreCase("manifest")){
+                	processManifest(node);
                 }
             }           
              
@@ -124,10 +127,10 @@ public class EPUBLoaderHelper {
     }
      
     private void parsePackage(Node packageNode) {       
-        //ePub.getPackage().parsePackage(packageNode);        
+        ePub.parse(packageNode);        
     }
  
-    private void processGuide(NodeList pnodeList) {
+    private void processGuide(Node pnodeList) {
          
     }
  
@@ -135,8 +138,8 @@ public class EPUBLoaderHelper {
          
     }
  
-    private void processManifest(NodeList pnodeList) {
-         
+    private void processManifest(Node pmanifestnode) {
+    	this.ePub.getManifest().parse(pmanifestnode);
     }
  
     private void processMetadata(Node pmetadatanode) {      

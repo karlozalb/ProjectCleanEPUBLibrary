@@ -1,5 +1,7 @@
 package com.pcg.epubloader;
 
+import java.util.HashMap;
+
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -17,6 +19,20 @@ public class EPUBUtils {
 		}
 		
 		return null;
+	}
+	
+	public static HashMap<String,String> getAttributesMap(NamedNodeMap pnodes){
+		
+		HashMap<String,String> map = new HashMap<String,String>();
+		
+		int size = pnodes.getLength();
+		
+		for (int i=0;i<size;i++){
+			Node item = pnodes.item(i);
+			map.put(item.getNodeName(), item.getNodeValue());
+		}
+		
+		return map;
 	}
 	
 	public static StringBuilder trimLeadingAndTrailingWhiteSpaces(StringBuilder pstring){

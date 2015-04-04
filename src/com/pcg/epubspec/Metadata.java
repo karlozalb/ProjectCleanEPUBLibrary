@@ -7,10 +7,17 @@ import org.w3c.dom.NodeList;
 
 import com.pcg.epubloader.EPUBUtils;
 import com.pcg.exceptions.EPUBException;
+import com.pcg.exceptions.InvalidIdentifierException;
 import com.pcg.exceptions.InvalidMetadataException;
+import com.pcg.exceptions.MetaElementWithZeroLengthValueException;
+import com.pcg.exceptions.MultipleTitlesWithoutAssociatedMetaException;
+import com.pcg.exceptions.OptionalElementWithZeroLengthValueException;
+import com.pcg.exceptions.UniqueIdentifierNotUniqueException;
 
 public class Metadata implements IVerificable,IEPUBMainNode{
 
+	private String packageUniqueId;
+	
 	LinkedList<DCIdentifier> DC_IDENTIFIER;
 	LinkedList<DCTitle> DC_TITLE;
 	LinkedList<DCLanguage> DC_LANGUAGE;
@@ -29,6 +36,10 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		LINK = new LinkedList<Link>();
 	}
 	
+	public void setPackageUniqueId(String puniqueidentifier){
+		packageUniqueId = puniqueidentifier;
+	}
+	
 	/**********************************************************************************
 	 * Class that describes a required element.
 	 * @author Carlos A.P.
@@ -36,10 +47,10 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 	 **********************************************************************************/
 	public class RequiredElement{		
 		public String textContent;
-		public String id;
+		public String id;		
 		
 		public boolean check(){
-			return false;
+			return id==null || id!=null && id.length() > 0;
 		}		
 		
 		public String toString(){
@@ -70,13 +81,13 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		public String dir;
 		
 		public boolean check(){
-			if (dir.length() > 0 && (dir.equalsIgnoreCase("rtl") || dir.equalsIgnoreCase("ltr"))){	
-				System.out.println("The property dir of title element must be rtl or ltr.");
+			if (dir != null && !(dir.equalsIgnoreCase("rtl") || dir.equalsIgnoreCase("ltr"))){	
 				return false;
 			}else{
 				return super.check();
-			}
+			}			
 		}
+		
 		
 		public String toString(){
 			return "xml_lang: "+xml_lang+" - dir: "+dir+" - "+super.toString();
@@ -91,29 +102,21 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 	 * @author Carlos A.P.
 	 *
 	 **********************************************************************************/
-	public class DCIdentifier extends RequiredElement{}
+	public class DCIdentifier extends RequiredElement{		
+		
+	}
 	
 	/***********************************************************************************
 	 * dc:title class.
 	 * @author Carlos A.P.
 	 *
 	 **********************************************************************************/
-	public class DCTitle extends RequiredElement{
-		public String xml_lang;
-		public String dir;
-
-		public boolean check(){
-			if (dir.length() > 0 && (dir.equalsIgnoreCase("rtl") || dir.equalsIgnoreCase("ltr"))){	
-				System.out.println("The property dir of title element must be rtl or ltr.");
-				return false;
-			}else{
-				return super.check();
-			}			
-		}
+	public class DCTitle extends OptionalElementLangAndDir{
 		
 		public String toString(){
-			return "xml_lang: "+xml_lang+" - dir: "+dir+" - "+super.toString();
+			return "xml_lang: "+xml_lang+" - dir: "+dir+" - id: "+id+" - textContent: "+textContent;
 		}
+		
 	}
 	
 	/***********************************************************************************
@@ -204,18 +207,56 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 	@Override
 	public boolean isValid() throws EPUBException {
 		
+		/* Phase 1
+		 * The minimal required metadata that each Rendition of an EPUB Publication must include
+		 * consists of three elements from the Dublin Core Metadata Element Set [DCMES] — title , 
+		 * identifier and language — together with the modified property from DCMI Metadata Terms [DCTERMS]
+		 */
+		
 		if (DC_IDENTIFIER.size() < 1) throw new InvalidMetadataException("There is no dc:identifier element in metadata. It's needed one element of this type at least.");
 		if (DC_TITLE.size() < 1) throw new InvalidMetadataException("There is no dc:title element in metadata. It's needed one element of this type at least.");
 		if (DC_LANGUAGE.size() < 1) throw new InvalidMetadataException("There is no dc:language element in metadata. It's needed one element of this type at least.");
-		if (META.size() < 1) throw new InvalidMetadataException("There is no meta element in metadata. It's needed one element of this type at least.");
+		if (META.size() < 1 || getMetaByAttributes("dcterms:modified",null,null).size() < 1) throw new InvalidMetadataException("There is no meta element in metadata. It's needed one element of this type at least.");
 		
-		//ID constraints
-		//**************************************************
-		//Is there an id with 0 length?
-		//Is the id of every identifier unique?		
-		//Is there only one id marked as unique-identifier?
+		//Check for correctness of the DCIdentifier ids.
+		//***********************************************************************
+		for (DCIdentifier identifier : DC_IDENTIFIER){
+			if (!identifier.check()) throw new InvalidIdentifierException("dc:identifier: Not null id attributes need at least one character long.");
+		}
 		
-		return false;
+		//Check for uniqueness of the unique-identifier.
+		//***********************************************************************
+		int uniqueAmount = 0; //If this number is different from 1, OOPS! ERROR!
+		
+		for (DCIdentifier identifier : DC_IDENTIFIER){
+			if (identifier.id.equalsIgnoreCase(packageUniqueId)) uniqueAmount++;
+		}
+		
+		//Check for multiple titles and if there are several, check if associated meta nodes exist.
+		if (DC_TITLE.size() > 1){
+			for (DCTitle title : DC_TITLE){
+				boolean metaFound = false;
+				for (Meta meta : META){
+					if (meta.refines.equalsIgnoreCase(title.id) && meta.property.equalsIgnoreCase("title-type")) metaFound = true;
+				}
+				if (!metaFound){
+					throw new MultipleTitlesWithoutAssociatedMetaException("When there are multiple titles, everyone needs an associated meta element which specifies the type of title (main, secondary, etc).");
+				}
+			}
+		}
+		
+		if (uniqueAmount != 1) throw new UniqueIdentifierNotUniqueException("dc:identifier: the unique-identifier parameter of package must link with ONLY ONE dc:identifier element.");	
+		
+		//Check for meta and DCMES elements contains non empty values.
+		
+		for (Meta meta : META){
+			if (meta.textContent == null || meta.textContent.length() <= 0) throw new MetaElementWithZeroLengthValueException("All meta values must be not null after whitespace trimming");
+		}
+		for (OptionalElement opt : DCMES_OPTIONAL){
+			if (opt.textContent == null || opt.textContent.length() <= 0) throw new OptionalElementWithZeroLengthValueException("All optional values must be not null after whitespace trimming");
+		}
+		
+		return true;
 	}
 
 	public void parse(Node pnode) {
@@ -378,10 +419,10 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 			if (elementId != null && elementId.length() > 0) metaElement.id = elementId;
 			
 			String elementLang = EPUBUtils.getAttributeValue("xml:lang", pitem.getAttributes());				
-			if (elementId != null && elementId.length() > 0) metaElement.xml_lang = elementLang; 			
+			if (elementLang != null && elementLang.length() > 0) metaElement.xml_lang = elementLang; 			
 			
 			String elementDir = EPUBUtils.getAttributeValue("dir", pitem.getAttributes());				
-			if (elementId != null && elementId.length() > 0) metaElement.dir = elementDir; 		
+			if (elementDir != null && elementDir.length() > 0) metaElement.dir = elementDir; 		
 			
 			String property = EPUBUtils.getAttributeValue("property", pitem.getAttributes());			
 			if (property != null && property.length() > 0) metaElement.property = property;
@@ -390,7 +431,7 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 			if (refines != null && refines.length() > 0) metaElement.refines = refines; 			
 			
 			String scheme = EPUBUtils.getAttributeValue("scheme", pitem.getAttributes());				
-			if (scheme != null && scheme.length() > 0) metaElement.dir = scheme; 			
+			if (scheme != null && scheme.length() > 0) metaElement.scheme = scheme; 			
 		}	
 		
 		return metaElement;
@@ -463,11 +504,46 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		return LINK;
 	}
 	
+	public LinkedList<OptionalElement> getOptionalElementsByName(String pname){	
+		LinkedList<OptionalElement> elements = new LinkedList<OptionalElement>();
+		for (OptionalElement opt : DCMES_OPTIONAL){
+			if (opt.nodeName.equalsIgnoreCase(pname)) elements.add(opt);
+		}
+		return elements;
+	}
+	
 	public OptionalElement getOptionalElementByName(String pname){
 		for (OptionalElement opt : DCMES_OPTIONAL){
 			if (opt.nodeName.equalsIgnoreCase(pname)) return opt;
 		}
 		return null;
+	}
+	
+	public LinkedList<Meta> getMetaByAttributes(String property,String refines,String scheme){
+		LinkedList<Meta> metaList = new LinkedList<Meta>();	
+		
+		for (Meta meta : META){
+			
+			boolean propertyCheck = false,refinesCheck = false,schemeCheck = false;
+					
+			if (property!=null && meta.property.equalsIgnoreCase(property) || property==null){
+				propertyCheck = true;			
+			}
+			
+			if (refines!=null && meta.refines.equalsIgnoreCase(refines) || refines==null){
+				refinesCheck = true;			
+			}
+			
+			if (scheme!=null && meta.scheme.equalsIgnoreCase(scheme) || scheme==null){
+				schemeCheck = true;			
+			}
+			
+			if (propertyCheck && refinesCheck && schemeCheck){
+				metaList.add(meta);
+			}
+		}
+		
+		return metaList;
 	}
 	
 }
