@@ -2,10 +2,12 @@ package com.pcg.epubspec;
 
 import java.util.LinkedList;
 
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.pcg.epubloader.EPUBUtils;
+import com.pcg.epubspec.Manifest.Item;
 import com.pcg.exceptions.EPUBException;
 import com.pcg.exceptions.InvalidIdentifierException;
 import com.pcg.exceptions.InvalidMetadataException;
@@ -67,7 +69,7 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		public String nodeName;
 		
 		public String toString(){
-			return "nodeName: "+nodeName+" - "+super.toString();
+			return "<"+nodeName+" id=\""+id+"\">"+textContent+"</"+nodeName+">\n";
 		}
 	}
 	
@@ -86,11 +88,10 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 			}else{
 				return super.check();
 			}			
-		}
-		
+		}	
 		
 		public String toString(){
-			return "xml_lang: "+xml_lang+" - dir: "+dir+" - "+super.toString();
+			return "<"+nodeName+" id=\""+id+"\" xml_lang=\""+xml_lang+"\" dir=\""+dir+"\">"+textContent+"</"+nodeName+">\n";
 		}
 	}
 	
@@ -103,7 +104,9 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 	 *
 	 **********************************************************************************/
 	public class DCIdentifier extends RequiredElement{		
-		
+		public String toString(){
+			return "<dc:identifier id=\""+id+"\">"+textContent+"</dc:identifier>\n";
+		}
 	}
 	
 	/***********************************************************************************
@@ -111,10 +114,10 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 	 * @author Carlos A.P.
 	 *
 	 **********************************************************************************/
-	public class DCTitle extends OptionalElementLangAndDir{
+	public class DCTitle extends OptionalElementLangAndDir{		
 		
 		public String toString(){
-			return "xml_lang: "+xml_lang+" - dir: "+dir+" - id: "+id+" - textContent: "+textContent;
+			return "<dc:title xml_lang=\""+xml_lang+"\" dir=\""+dir+"\" id=\""+id+"\">"+textContent+"</dc:title>\n";
 		}
 		
 	}
@@ -127,10 +130,10 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 	public class Meta extends OptionalElementLangAndDir{		
 		public String property;
 		public String refines;
-		public String scheme;
+		public String scheme;	
 		
 		public String toString(){
-			return "property: "+property+" - refines: "+refines+" - scheme: "+scheme+" - "+super.toString();
+			return "<meta property=\""+property+"\" refines=\""+refines+"\" scheme=\""+scheme+"\" lang=\""+xml_lang+"\" dir=\""+dir+"\">"+textContent+"</meta>\n";
 		}
 	}
 	
@@ -144,7 +147,7 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		public String content;
 		
 		public String toString(){
-			return "name: "+name+" - content: "+content;
+			return "<meta name=\""+name+"\" content=\""+content+"\"/>\n";
 		}
 	}
 	
@@ -157,7 +160,11 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		
 		public boolean check(){
 			return true;
-		}	
+		}
+		
+		public String toString(){
+			return "<dc:language id=\""+id+"\">"+textContent+"</dc:language>\n";
+		}
 	}
 	
 	/**********************************************************************************
@@ -200,7 +207,7 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		String media_type;
 		
 		public String toString(){
-			return "href: "+href+" - rel: "+rel+" - refines: "+refines+" - media_type: "+media_type+" - "+super.toString();
+			return "<link href=\""+href+"\" rel=\""+rel+"\" id=\""+id+"\" refines=\""+refines+"\" media-type=\""+media_type+"\"/>\n";
 		}
 	}
 
@@ -274,7 +281,7 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 			}else if (nodeName.equalsIgnoreCase("dc:title")){
 				DC_TITLE.add(parseTitle(item));
 			}else if (nodeName.equalsIgnoreCase("dc:language")){
-				DC_LANGUAGE.add(parseLanguage(item));
+				DC_LANGUAGE.add(parseLanguage(item));			
 			}else if (nodeName.equalsIgnoreCase("meta")){
 				
 				boolean isOPF2 = false;
@@ -294,8 +301,9 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 				}else{
 					META.add(parseMeta(item));					
 				}
+			}else if (nodeName.equalsIgnoreCase("link")){
+				LINK.add(parseLink(item));
 			//Optional DCMES nodes.
-			//I use different lines for same behaviours to achieve a better readability of the code.
 			}else if (nodeName.equalsIgnoreCase("dc:contributor")){ //*
 				DCMES_OPTIONAL.add(parseDCMESOptionalElementLandAndDir(item));
 			}else if (nodeName.equalsIgnoreCase("dc:coverage")){ //* 
@@ -331,7 +339,7 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		identifier.textContent = pitem.getTextContent();
 		
 		if (pitem.hasAttributes()){
-			String identifierId = EPUBUtils.getAttributeValue("id", pitem.getAttributes());	
+			String identifierId = EPUBUtils.getAttributeValue("id", pitem.getAttributes());
 			
 			if (identifierId != null && identifierId.length() > 0) identifier.id = identifierId; 			
 		}
@@ -344,14 +352,16 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		
 		title.textContent = pitem.getTextContent();
 		
-		if (pitem.hasAttributes()){
-			String titleId = EPUBUtils.getAttributeValue("id", pitem.getAttributes());			
+		if (pitem.hasAttributes()){			
+			NamedNodeMap attributes = pitem.getAttributes();
+			
+			String titleId = EPUBUtils.getAttributeValue("id", attributes);		
 			if (titleId != null && titleId.length() > 0) title.id = titleId;
 			
-			String titleLang = EPUBUtils.getAttributeValue("xml:lang", pitem.getAttributes());			
+			String titleLang = EPUBUtils.getAttributeValue("xml:lang", attributes);	
 			if (titleLang != null && titleLang.length() > 0) title.xml_lang = titleLang;
 			
-			String titleDir = EPUBUtils.getAttributeValue("dir", pitem.getAttributes());			
+			String titleDir = EPUBUtils.getAttributeValue("dir", attributes);		
 			if (titleDir != null && titleDir.length() > 0) title.dir = titleDir;
 		}
 		
@@ -365,7 +375,9 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		language.textContent = pitem.getTextContent();
 		
 		if (pitem.hasAttributes()){
-			String identifierId = EPUBUtils.getAttributeValue("id", pitem.getAttributes());	
+			NamedNodeMap attributes = pitem.getAttributes();
+			
+			String identifierId = EPUBUtils.getAttributeValue("id", attributes);
 			
 			if (identifierId != null && identifierId.length() > 0) language.id = identifierId; 			
 		}
@@ -381,7 +393,9 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		optionalElement.textContent = pitem.getTextContent();
 		
 		if (pitem.hasAttributes()){
-			String elementId = EPUBUtils.getAttributeValue("id", pitem.getAttributes());	
+			NamedNodeMap attributes = pitem.getAttributes();
+			
+			String elementId = EPUBUtils.getAttributeValue("id", attributes);	
 			
 			if (elementId != null && elementId.length() > 0) optionalElement.id = elementId; 			
 		}		
@@ -396,13 +410,15 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		optionalElement.textContent = pitem.getTextContent();
 		
 		if (pitem.hasAttributes()){
-			String elementId = EPUBUtils.getAttributeValue("id", pitem.getAttributes());			
+			NamedNodeMap attributes = pitem.getAttributes();
+			
+			String elementId = EPUBUtils.getAttributeValue("id", attributes);			
 			if (elementId != null && elementId.length() > 0) optionalElement.id = elementId;
 			
-			String elementLang = EPUBUtils.getAttributeValue("xml:lang", pitem.getAttributes());				
+			String elementLang = EPUBUtils.getAttributeValue("xml:lang", attributes);			
 			if (elementId != null && elementId.length() > 0) optionalElement.xml_lang = elementLang; 			
 			
-			String elementDir = EPUBUtils.getAttributeValue("dir", pitem.getAttributes());				
+			String elementDir = EPUBUtils.getAttributeValue("dir", attributes);				
 			if (elementId != null && elementId.length() > 0) optionalElement.dir = elementDir; 			
 		}	
 		
@@ -414,23 +430,25 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		
 		metaElement.textContent = pitem.getTextContent();
 		
-		if (pitem.hasAttributes()){			
-			String elementId = EPUBUtils.getAttributeValue("id", pitem.getAttributes());			
+		if (pitem.hasAttributes()){	
+			NamedNodeMap attributes = pitem.getAttributes();
+			
+			String elementId = EPUBUtils.getAttributeValue("id", attributes);		
 			if (elementId != null && elementId.length() > 0) metaElement.id = elementId;
 			
-			String elementLang = EPUBUtils.getAttributeValue("xml:lang", pitem.getAttributes());				
+			String elementLang = EPUBUtils.getAttributeValue("xml:lang", attributes);				
 			if (elementLang != null && elementLang.length() > 0) metaElement.xml_lang = elementLang; 			
 			
-			String elementDir = EPUBUtils.getAttributeValue("dir", pitem.getAttributes());				
+			String elementDir = EPUBUtils.getAttributeValue("dir", attributes);				
 			if (elementDir != null && elementDir.length() > 0) metaElement.dir = elementDir; 		
 			
-			String property = EPUBUtils.getAttributeValue("property", pitem.getAttributes());			
+			String property = EPUBUtils.getAttributeValue("property", attributes);			
 			if (property != null && property.length() > 0) metaElement.property = property;
 			
-			String refines = EPUBUtils.getAttributeValue("refines", pitem.getAttributes());				
+			String refines = EPUBUtils.getAttributeValue("refines", attributes);				
 			if (refines != null && refines.length() > 0) metaElement.refines = refines; 			
 			
-			String scheme = EPUBUtils.getAttributeValue("scheme", pitem.getAttributes());				
+			String scheme = EPUBUtils.getAttributeValue("scheme", attributes);		
 			if (scheme != null && scheme.length() > 0) metaElement.scheme = scheme; 			
 		}	
 		
@@ -443,19 +461,21 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		link.textContent = pitem.getTextContent();
 		
 		if (pitem.hasAttributes()){			
-			String href = EPUBUtils.getAttributeValue("href", pitem.getAttributes());			
+			NamedNodeMap attributes = pitem.getAttributes();
+			
+			String href = EPUBUtils.getAttributeValue("href", attributes);		
 			if (href != null && href.length() > 0) link.href = href;
 			
-			String rel = EPUBUtils.getAttributeValue("rel", pitem.getAttributes());				
+			String rel = EPUBUtils.getAttributeValue("href", attributes);		
 			if (rel != null && rel.length() > 0) link.rel = rel; 			
 			
-			String elementId = EPUBUtils.getAttributeValue("id", pitem.getAttributes());				
+			String elementId = EPUBUtils.getAttributeValue("id", attributes);			
 			if (elementId != null && elementId.length() > 0) link.id = elementId; 		
 			
-			String mediaType = EPUBUtils.getAttributeValue("media-type", pitem.getAttributes());			
+			String mediaType = EPUBUtils.getAttributeValue("media-type", attributes);			
 			if (mediaType != null && mediaType.length() > 0) link.media_type = mediaType;
 			
-			String refines = EPUBUtils.getAttributeValue("refines", pitem.getAttributes());				
+			String refines = EPUBUtils.getAttributeValue("refines", attributes);			
 			if (refines != null && refines.length() > 0) link.refines = refines;			
 		}	
 		
@@ -465,11 +485,13 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 	private OPF2Meta parseOPF2Meta(Node pitem){
 		OPF2Meta meta = new OPF2Meta();
 		
-		if (pitem.hasAttributes()){			
-			String name = EPUBUtils.getAttributeValue("name", pitem.getAttributes());			
+		if (pitem.hasAttributes()){	
+			NamedNodeMap attributes = pitem.getAttributes();
+			
+			String name = EPUBUtils.getAttributeValue("name", attributes);			
 			if (name != null && name.length() > 0) meta.name = name;
 			
-			String content = EPUBUtils.getAttributeValue("content", pitem.getAttributes());				
+			String content = EPUBUtils.getAttributeValue("content", attributes);			
 			if (content != null && content.length() > 0) meta.content = content;			
 		}	
 		
@@ -544,6 +566,41 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		}
 		
 		return metaList;
+	}
+	
+	public String toString(){
+		String res = "<metadata>\n";
+		
+		for (DCIdentifier mt : DC_IDENTIFIER){
+			res+="\t" + mt.toString();
+		}
+		
+		for (DCTitle mt : DC_TITLE){
+			res+="\t" + mt.toString();
+		}
+		
+		for (DCLanguage mt : DC_LANGUAGE){
+			res+="\t" + mt.toString();
+		}
+		
+		for (Meta mt : META){
+			res+="\t" + mt.toString();
+		}
+		
+		for (OptionalElement mt : DCMES_OPTIONAL){
+			res+="\t" + mt.toString();
+		}
+		
+		for (OPF2Meta mt : OPF2_META){
+			res+="\t" + mt.toString();
+		}
+		
+		for (Link mt : LINK){
+			res+="\t" + mt.toString();		}		
+		
+		res += "</metadata>\n";
+		
+		return res;
 	}
 	
 }

@@ -60,7 +60,9 @@ public class EPUBLoaderHelper {
             //Load and Parse the XML document
             //document contains the complete XML as a Tree.
              
-            Document document = builder.parse(pcontainerstream);        
+            Document document = builder.parse(pcontainerstream);   
+            
+            pcontainerstream.close();
              
             //Root node.
             NodeList nodeList = document.getDocumentElement().getChildNodes(); //<container> node children.
@@ -105,8 +107,7 @@ public class EPUBLoaderHelper {
                          
             parsePackage(packageNode);
              
-            NodeList nodeList = document.getDocumentElement().getChildNodes(); //<package> node children.
-             
+            NodeList nodeList = document.getDocumentElement().getChildNodes(); //<package> node children.             
             
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);               
@@ -114,6 +115,14 @@ public class EPUBLoaderHelper {
                     processMetadata(node);
                 }else if (node.getNodeName().equalsIgnoreCase("manifest")){
                 	processManifest(node);
+                }else if (node.getNodeName().equalsIgnoreCase("spine")){
+                	processSpine(node);
+                }else if (node.getNodeName().equalsIgnoreCase("guide")){
+                	processGuide(node);
+                }else if (node.getNodeName().equalsIgnoreCase("bindings")){
+                	processBindings(node);
+                }else if (node.getNodeName().equalsIgnoreCase("collection")){
+                	processCollection(node);
                 }
             }           
              
@@ -130,12 +139,12 @@ public class EPUBLoaderHelper {
         ePub.parse(packageNode);        
     }
  
-    private void processGuide(Node pnodeList) {
-         
+    private void processGuide(Node pguidenode) {
+    	ePub.getGuide().parse(pguidenode);
     }
  
-    private void processSpine(NodeList pnodeList) {
-         
+    private void processSpine(Node pspinenode) {
+    	ePub.getSpine().parse(pspinenode);
     }
  
     private void processManifest(Node pmanifestnode) {
@@ -144,6 +153,14 @@ public class EPUBLoaderHelper {
  
     private void processMetadata(Node pmetadatanode) {      
         this.ePub.getMetadata().parse(pmetadatanode);
+    }
+    
+    private void processBindings(Node pbindingsnode) {      
+        this.ePub.getBindings().parse(pbindingsnode);
+    }
+    
+    private void processCollection(Node pcollectionsnode) {      
+        this.ePub.getCollection().parse(pcollectionsnode);
     }
  
     ZipEntry getZipEntry(String popfpath){
@@ -160,4 +177,7 @@ public class EPUBLoaderHelper {
          return null; //File not found.
     }
 	
+    public Package getPackage(){
+    	return ePub;
+    }
 }

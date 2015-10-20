@@ -3,10 +3,12 @@ package com.pcg.epubspec;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.pcg.epubloader.EPUBUtils;
+import com.pcg.epubspec.Guide.Reference;
 import com.pcg.exceptions.EPUBException;
 
 public class Manifest implements IVerificable,IEPUBMainNode{
@@ -25,6 +27,10 @@ public class Manifest implements IVerificable,IEPUBMainNode{
 		public String fallback; 
 		public String properties;
 		public String media_overlay;
+		
+		public String toString(){
+			return "<item id=\""+id+"\" href=\""+href+"\" media_type=\""+media_type+"\" fallback=\""+fallback+"\" properties=\""+properties+"\" media_overlay=\""+media_overlay+"\">\n";
+		}
 	}
 	
 	@Override
@@ -38,17 +44,30 @@ public class Manifest implements IVerificable,IEPUBMainNode{
 			Node node = children.item(i);
 			
 			if (node.hasAttributes()){
+				NamedNodeMap attributes = node.getAttributes();
 				
-				HashMap<String,String> attributes = EPUBUtils.getAttributesMap(node.getAttributes());
+				item.id = EPUBUtils.getAttributeValue("id", attributes);	
+				item.href = EPUBUtils.getAttributeValue("href", attributes);
+				item.media_type = EPUBUtils.getAttributeValue("media-type", attributes);	
+				item.fallback = EPUBUtils.getAttributeValue("fallback", attributes);
+				item.properties = EPUBUtils.getAttributeValue("properties", attributes);	
+				item.media_overlay = EPUBUtils.getAttributeValue("media_overlay", attributes);
 				
-				item.id = attributes.get("id");		
-				item.href = attributes.get("href");	
-				item.media_type = attributes.get("media_type");	
-				item.fallback = attributes.get("fallback");	
-				item.properties = attributes.get("properties");	
-				item.media_overlay = attributes.get("media_overlay");
-			}			
+				ITEM.add(item);
+			}
+			
 		}		
+	}
+	
+	public String toString(){
+		String res = "<manifest>\n";
+		
+		for (Item mt : ITEM){
+			res+="\t" + mt.toString();
+		}
+		
+		res += "</manifest>\n";
+		return res;
 	}
 
 	@Override

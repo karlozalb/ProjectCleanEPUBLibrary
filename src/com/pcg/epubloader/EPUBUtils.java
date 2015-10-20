@@ -9,31 +9,35 @@ public class EPUBUtils {
 
 	public static String getAttributeValue(String pattributename,NamedNodeMap pnodes){
 		
-		int size = pnodes.getLength();
+		/*int size = pnodes.getLength();
 		
 		for (int i=0;i<size;i++){
 			Node item = pnodes.item(i);
 			if (item.getNodeName().equalsIgnoreCase(pattributename)){
 				return item.getNodeValue();
 			}
-		}
+		}*/
 		
-		return null;
+		if (pnodes != null && pnodes.getNamedItem(pattributename) != null){
+			return pnodes.getNamedItem(pattributename).getNodeValue();
+		}	
+		
+		return "";
 	}
-	
-	public static HashMap<String,String> getAttributesMap(NamedNodeMap pnodes){
-		
-		HashMap<String,String> map = new HashMap<String,String>();
-		
-		int size = pnodes.getLength();
-		
-		for (int i=0;i<size;i++){
-			Node item = pnodes.item(i);
-			map.put(item.getNodeName(), item.getNodeValue());
-		}
-		
-		return map;
-	}
+//	
+//	public static HashMap<String,String> getAttributesMap(NamedNodeMap pnodes){
+//		
+//		HashMap<String,String> map = new HashMap<String,String>();
+//		
+//		int size = pnodes.getLength();
+//		
+//		for (int i=0;i<size;i++){
+//			Node item = pnodes.item(i);
+//			map.put(item.getNodeName(), item.getNodeValue());
+//		}
+//		
+//		return map;
+//	}
 	
 	public static StringBuilder trimLeadingAndTrailingWhiteSpaces(StringBuilder pstring){
 		
