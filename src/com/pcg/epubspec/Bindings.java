@@ -7,7 +7,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.pcg.epubloader.EPUBUtils;
-import com.pcg.epubspec.Manifest.Item;
 import com.pcg.exceptions.EPUBException;
 
 public class Bindings implements IVerificable,IEPUBMainNode {

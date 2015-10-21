@@ -46,7 +46,17 @@ public class EPUBLoaderHelper {
       } catch (IOException e) {
           e.printStackTrace();
       }
-    }   
+    }  
+    
+	public InputStream getFile(String pfilename){    	
+    	try {
+        	ZipEntry entry = mZipHelper.getEntry(pfilename);
+			return mZipHelper.getInputStream(entry);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	return null;
+    }
      
     /**
      * This method looks for the OPF file, parsing container.xml.

@@ -1,22 +1,10 @@
 package com.pcg.epubloader;
 
-import java.util.HashMap;
-
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 public class EPUBUtils {
 
-	public static String getAttributeValue(String pattributename,NamedNodeMap pnodes){
-		
-		/*int size = pnodes.getLength();
-		
-		for (int i=0;i<size;i++){
-			Node item = pnodes.item(i);
-			if (item.getNodeName().equalsIgnoreCase(pattributename)){
-				return item.getNodeValue();
-			}
-		}*/
+	public static String getAttributeValue(String pattributename,NamedNodeMap pnodes){		
 		
 		if (pnodes != null && pnodes.getNamedItem(pattributename) != null){
 			return pnodes.getNamedItem(pattributename).getNodeValue();
@@ -24,23 +12,8 @@ public class EPUBUtils {
 		
 		return "";
 	}
-//	
-//	public static HashMap<String,String> getAttributesMap(NamedNodeMap pnodes){
-//		
-//		HashMap<String,String> map = new HashMap<String,String>();
-//		
-//		int size = pnodes.getLength();
-//		
-//		for (int i=0;i<size;i++){
-//			Node item = pnodes.item(i);
-//			map.put(item.getNodeName(), item.getNodeValue());
-//		}
-//		
-//		return map;
-//	}
 	
-	public static StringBuilder trimLeadingAndTrailingWhiteSpaces(StringBuilder pstring){
-		
+	public static StringBuilder trimLeadingAndTrailingWhiteSpaces(StringBuilder pstring){		
 		int i = 0;
 		
 		for (i=0;i<pstring.length();i++){
@@ -56,7 +29,6 @@ public class EPUBUtils {
 		if (i>=0) pstring.delete(i+1, pstring.length());
 		
 		return pstring;
-	}
-	
+	}	
 
 }

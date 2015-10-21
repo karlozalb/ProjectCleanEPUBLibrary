@@ -1,6 +1,5 @@
 package com.pcg.epubspec;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.w3c.dom.NamedNodeMap;
@@ -8,7 +7,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.pcg.epubloader.EPUBUtils;
-import com.pcg.epubspec.Guide.Reference;
 import com.pcg.exceptions.EPUBException;
 
 public class Manifest implements IVerificable,IEPUBMainNode{
@@ -57,6 +55,10 @@ public class Manifest implements IVerificable,IEPUBMainNode{
 			}
 			
 		}		
+	}
+	
+	public LinkedList<Item> getItems(){
+		return ITEM;
 	}
 	
 	public String toString(){

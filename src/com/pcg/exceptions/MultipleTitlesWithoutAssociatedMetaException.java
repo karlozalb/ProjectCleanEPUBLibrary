@@ -1,6 +1,8 @@
 package com.pcg.exceptions;
 
 public class MultipleTitlesWithoutAssociatedMetaException extends EPUBException {
+	
+	private static final long serialVersionUID = 6036381385254553973L;
 
 	public MultipleTitlesWithoutAssociatedMetaException() {
 		super();

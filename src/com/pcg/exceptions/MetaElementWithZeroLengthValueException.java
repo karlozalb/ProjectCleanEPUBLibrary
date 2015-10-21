@@ -1,6 +1,8 @@
 package com.pcg.exceptions;
 
 public class MetaElementWithZeroLengthValueException extends EPUBException {
+	
+	private static final long serialVersionUID = 4348012718272517071L;
 
 	public MetaElementWithZeroLengthValueException() {
 		super();
