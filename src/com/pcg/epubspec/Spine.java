@@ -85,5 +85,9 @@ public class Spine implements IVerificable,IEPUBMainNode{
 				
 		return res;
 	}
+	
+	public LinkedList<ItemRef> getSpine(){
+		return ITEM_REF;
+	}
 
 }

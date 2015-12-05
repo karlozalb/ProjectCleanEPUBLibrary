@@ -46,7 +46,17 @@ public class EPUBLoaderHelper {
       } catch (IOException e) {
           e.printStackTrace();
       }
-    }   
+    }  
+    
+	public InputStream getInputStream(String pfilename){    	
+    	try {
+        	ZipEntry entry = getZipEntry(pfilename);
+			return mZipHelper.getInputStream(entry);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;		
+    }
      
     /**
      * This method looks for the OPF file, parsing container.xml.
@@ -162,22 +172,23 @@ public class EPUBLoaderHelper {
     private void processCollection(Node pcollectionsnode) {      
         this.ePub.getCollection().parse(pcollectionsnode);
     }
- 
-    ZipEntry getZipEntry(String popfpath){
-        Enumeration<? extends ZipEntry> entries = mZipHelper.entries();
- 
-         //We need to find container.xml to point to our OPF file.       
-         while(entries.hasMoreElements()){          
-            ZipEntry entry = entries.nextElement();
-            if (entry.getName().equalsIgnoreCase(popfpath)){                
-                return entry;
-            }
-         }
-          
-         return null; //File not found.
-    }
 	
     public Package getPackage(){
     	return ePub;
     }
+    
+    private ZipEntry getZipEntry(String popfpath){
+    	Enumeration<? extends ZipEntry> entries = mZipHelper.entries();
+    	
+    	//We need to find container.xml to point to our OPF file.       
+    	while(entries.hasMoreElements()){          
+    		ZipEntry entry = entries.nextElement();
+    		System.out.println(entry);
+    		if (entry.getName().equalsIgnoreCase(popfpath)){                
+    			return entry;
+    		}
+    	}
+    	
+    	return null; //File not found.
+    }    
 }

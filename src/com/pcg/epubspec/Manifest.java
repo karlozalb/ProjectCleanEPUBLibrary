@@ -74,5 +74,21 @@ public class Manifest implements IVerificable,IEPUBMainNode{
 	public boolean isValid() throws EPUBException {
 		return true;
 	}	
+	
+	public LinkedList<Item> getItems(){
+		return ITEM;
+	}
+	
+	public Item getIdemByIdRef(String pidref){
+		Item toRet = null;
+		
+		for (Item it : ITEM){
+			if (it.id.equalsIgnoreCase(pidref)){
+				toRet = it;
+				break;
+			}
+		}
+		return toRet;
+	}
 
 }
