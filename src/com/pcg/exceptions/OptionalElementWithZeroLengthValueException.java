@@ -2,6 +2,8 @@ package com.pcg.exceptions;
 
 public class OptionalElementWithZeroLengthValueException extends EPUBException{
 
+	private static final long serialVersionUID = 58431682281332125L;
+
 	public OptionalElementWithZeroLengthValueException() {
 		super();
 	}

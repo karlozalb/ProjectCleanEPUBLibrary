@@ -18,7 +18,7 @@ public class EPUBLauncher {
 		
 		System.out.println(epubloader.getPackage().toString());
 		
-		LinkedList<ItemRef> itemRefs = epubloader.getPackage().getSpine().getSpine();
+		LinkedList<ItemRef> itemRefs = epubloader.getPackage().getSpine().getItemRefs();
 		
 		String fileRef = itemRefs.get(0).idref;
 		

@@ -55,7 +55,7 @@ public class EPUBLoaderHelper {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;		
+		return null;
     }
      
     /**
