@@ -2,6 +2,8 @@ package com.pcg.epubloader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -10,6 +12,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -57,6 +60,19 @@ public class EPUBLoaderHelper {
 		}
 		return null;
     }
+	
+	public String getFileAsAString(String pfilename){
+		InputStream is = getInputStream(pfilename);		
+		StringWriter writer = new StringWriter();
+		try {
+			IOUtils.copy(is, writer, Charset.forName("UTF-8"));
+			return writer.toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+		return null;
+	}
+	
      
     /**
      * This method looks for the OPF file, parsing container.xml.
@@ -182,9 +198,9 @@ public class EPUBLoaderHelper {
     	
     	//We need to find container.xml to point to our OPF file.       
     	while(entries.hasMoreElements()){          
-    		ZipEntry entry = entries.nextElement();
-    		System.out.println(entry);
-    		if (entry.getName().equalsIgnoreCase(popfpath)){                
+    		ZipEntry entry = entries.nextElement();    		
+    		
+    		if (entry.getName().equalsIgnoreCase(popfpath) || entry.getName().endsWith(popfpath)){                
     			return entry;
     		}
     	}

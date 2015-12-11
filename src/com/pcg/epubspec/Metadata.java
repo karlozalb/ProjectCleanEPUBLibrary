@@ -1,6 +1,7 @@
 package com.pcg.epubspec;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -15,7 +16,7 @@ import com.pcg.exceptions.MultipleTitlesWithoutAssociatedMetaException;
 import com.pcg.exceptions.OptionalElementWithZeroLengthValueException;
 import com.pcg.exceptions.UniqueIdentifierNotUniqueException;
 
-public class Metadata implements IVerificable,IEPUBMainNode{
+public class Metadata implements IVerificable,IEPUBMainNode,IMetadata{
 
 	private String packageUniqueId;
 	
@@ -600,6 +601,79 @@ public class Metadata implements IVerificable,IEPUBMainNode{
 		res += "</metadata>\n";
 		
 		return res;
+	}
+
+	@Override
+	public String getBookTitle() throws EPUBException {
+		if (DC_TITLE.size() == 0) throw new EPUBException();			
+		if (DC_TITLE.size() == 1) return DC_TITLE.getFirst().textContent;
+		
+		//Multiple titles.	
+		String titleId = null;
+		
+		for (Meta m : META){
+			if (m.property.toUpperCase().equalsIgnoreCase("TITLE_TYPE") && m.textContent.toUpperCase().equalsIgnoreCase("MAIN")){
+				titleId = m.refines;
+			}
+		}
+		
+		if (titleId == null) throw new EPUBException();	
+		
+		for (RequiredElement element : DC_TITLE){
+			if (titleId.toUpperCase().endsWith(element.id.toUpperCase())) return element.textContent;
+		}
+		
+		return null;
+	}
+
+	@Override
+	public String[] getBookAuthor() throws EPUBException {
+		if (DCMES_OPTIONAL.size() == 0) throw new EPUBException();			
+		if (DCMES_OPTIONAL.size() == 1) {
+			if (DCMES_OPTIONAL.getFirst().nodeName.equalsIgnoreCase("dc:creator")){
+				String[] author = new String[1];
+				
+				author[0] = DCMES_OPTIONAL.getFirst().textContent;
+				
+				return author;
+			}				
+		}
+		
+		LinkedList<String> authors = new LinkedList<String>();
+		
+		for (int i=0;i<DCMES_OPTIONAL.size();i++){
+			OptionalElement n = DCMES_OPTIONAL.get(i);			
+			if (DCMES_OPTIONAL.get(i).nodeName.equalsIgnoreCase("dc:creator")){
+				authors.add(n.textContent);
+			}
+		}
+		
+		String[] arrayAuthors = new String[authors.size()];
+		
+		for (int i=0;i<arrayAuthors.length;i++){
+			arrayAuthors[i] = authors.get(i);
+		}
+		
+		return arrayAuthors;
+		
+		/*int numCreators
+		
+		
+		
+		//Multiple titles.	
+		String author = null;
+		
+		for (Meta m : META){
+			if (m.property.equalsIgnoreCase("ROLE") && m.textContent.equalsIgnoreCase("aut")){
+				author = m.refines;
+			}
+		}
+		
+		if (author == null) throw new EPUBException();	
+		
+		for (RequiredElement element : DCMES_OPTIONAL){
+			if (element.id != null && author.toUpperCase().endsWith(element.id.toUpperCase())) return element.textContent;
+		}*/		
 	}
 	
 }

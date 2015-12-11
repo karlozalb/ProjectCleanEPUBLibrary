@@ -77,7 +77,7 @@ public class Manifest implements IVerificable,IEPUBMainNode{
 		return true;
 	}
 	
-	public Item getIdemByIdRef(String pidref){
+	public Item getItemByIdRef(String pidref){
 		Item toRet = null;
 		
 		for (Item it : ITEM){

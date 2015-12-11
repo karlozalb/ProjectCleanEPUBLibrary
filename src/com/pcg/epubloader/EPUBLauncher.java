@@ -14,15 +14,13 @@ import com.pcg.epubspec.Spine.ItemRef;
 
 public class EPUBLauncher {
 	public static void main(String[] args) {
-		EPUBLoaderHelper epubloader = new EPUBLoaderHelper("book.epub");
-		
-		System.out.println(epubloader.getPackage().toString());
+		EPUBLoaderHelper epubloader = new EPUBLoaderHelper("book.epub");		
 		
 		LinkedList<ItemRef> itemRefs = epubloader.getPackage().getSpine().getItemRefs();
 		
 		String fileRef = itemRefs.get(0).idref;
 		
-		Item it = epubloader.getPackage().getManifest().getIdemByIdRef(fileRef);
+		Item it = epubloader.getPackage().getManifest().getItemByIdRef(fileRef);
 		
 		if (it != null){
 			InputStream is = epubloader.getInputStream(it.href);		
@@ -33,7 +31,6 @@ public class EPUBLauncher {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			System.out.println(writer.toString());
 		}
 	}	
 }
