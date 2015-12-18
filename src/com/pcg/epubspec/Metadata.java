@@ -654,26 +654,7 @@ public class Metadata implements IVerificable,IEPUBMainNode,IMetadata{
 			arrayAuthors[i] = authors.get(i);
 		}
 		
-		return arrayAuthors;
-		
-		/*int numCreators
-		
-		
-		
-		//Multiple titles.	
-		String author = null;
-		
-		for (Meta m : META){
-			if (m.property.equalsIgnoreCase("ROLE") && m.textContent.equalsIgnoreCase("aut")){
-				author = m.refines;
-			}
-		}
-		
-		if (author == null) throw new EPUBException();	
-		
-		for (RequiredElement element : DCMES_OPTIONAL){
-			if (element.id != null && author.toUpperCase().endsWith(element.id.toUpperCase())) return element.textContent;
-		}*/		
+		return arrayAuthors;	
 	}
 	
 }

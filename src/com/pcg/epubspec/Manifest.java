@@ -61,6 +61,14 @@ public class Manifest implements IVerificable,IEPUBMainNode{
 		return ITEM;
 	}
 	
+	public String getCoverImagePath(){
+		for (Item item : ITEM){
+			if (item.properties.equalsIgnoreCase("cover-image")) return item.href;
+		}
+		
+		return null;
+	}
+	
 	public String toString(){
 		String res = "<manifest>\n";
 		

@@ -26,9 +26,12 @@ public class EPUBLoaderHelper {
     private DocumentBuilderFactory mDocumentFactory = DocumentBuilderFactory.newInstance();
  
     private Package ePub;
+    private String mPath;
      
     public EPUBLoaderHelper(String pzippath){
       try {
+    	 mPath = pzippath;
+    	  
          ePub = new Package();
  
          //Zip opening
@@ -206,5 +209,10 @@ public class EPUBLoaderHelper {
     	}
     	
     	return null; //File not found.
-    }    
+    }
+    
+    public String getPath(){
+    	return mPath;
+    }   
+     
 }
