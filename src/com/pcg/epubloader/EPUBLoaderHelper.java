@@ -57,7 +57,7 @@ public class EPUBLoaderHelper {
 	public InputStream getInputStream(String pfilename){    	
     	try {
         	ZipEntry entry = getZipEntry(pfilename);
-			return mZipHelper.getInputStream(entry);
+        	if (entry != null) return mZipHelper.getInputStream(entry);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -209,6 +209,17 @@ public class EPUBLoaderHelper {
     	}
     	
     	return null; //File not found.
+    }
+    
+    public InputStream getBookCover(){
+    	InputStream istream = getInputStream("cover.jpg");
+    	if (istream == null){
+    		istream = getInputStream("cover.jpeg");    		
+    		if (istream == null){
+        		istream = getInputStream("cover.png");
+        	}
+    	}
+    	return istream;
     }
     
     public String getPath(){
